@@ -10,6 +10,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 mongoose.connect("mongodb://127.0.0.1:27017/billingDB?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.9.1")
 
+const transactionSchema = new mongoose.Schema({
+  transaction_amount: Number,
+  transaction_type: {
+    type: String,
+    enum: ['credit', 'debit']
+  },
+  transaction_date: {
+    type: Date,
+    default: Date.now()
+  }
+});
 
 const customerSchema = new mongoose.Schema({
   customerId: { type: Number, unique: true },
@@ -21,20 +32,13 @@ const customerSchema = new mongoose.Schema({
     type: String,
     unique: true
   },
-  transaction_type: {
-    type: String,
-    enum: ['credit', 'debit']
-  },
-  transaction_amount: Number,
   balance: {
     type: Number,
     default: 0
   },
-  transaction_date: {
-    type: Date,
-    default: Date.now()
-  }
+  transactions: [transactionSchema]
 })
+
 customerSchema.pre('save', async function (next) { // incremental customerId
   if (!this.customerId) {
     try {
@@ -76,10 +80,12 @@ app.route("/addCustomer")
     const { customerName, mobile_no, transaction_amount, transaction_type } = req.body;
     const customer = new Customer({
       customerName,
-      mobile_no,
-      transaction_amount,
-      transaction_type
+      mobile_no
     });
+    customer.transactions.push({
+      transaction_amount: transaction_amount,
+      transaction_type: transaction_type
+    })
     if (transaction_type === "credit") {
       customer.balance -= transaction_amount;
     } else if (transaction_type === "debit") {
