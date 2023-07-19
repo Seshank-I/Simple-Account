@@ -17,9 +17,10 @@ const transactionSchema = new mongoose.Schema({
     enum: ['credit', 'debit']
   },
   transaction_date: {
-    type: Date,
-    default: Date.now()
-  }
+    type: String,
+    default: new Date().toLocaleDateString("en-gb")
+  },
+  transaction_time: { type: String, default: new Date().toLocaleTimeString() }
 });
 
 const customerSchema = new mongoose.Schema({
@@ -99,6 +100,20 @@ app.route("/addCustomer")
         res.status(500).send('Error adding customer');
       })
   })
+
+
+app.get('/viewCustomer', (req, res) => {
+  const customerId = req.query.customerId;
+
+  Customer.findOne({ customerId }).exec()
+    .then(customer => {
+      res.render('viewCustomer', { customer });
+    })
+    .catch(error => {
+      console.error('Error retrieving customer details:', error);
+      res.status(500).send('Error retrieving customer details');
+    });
+});
 
 
 app.get("/allCustomers", function (req, res) {

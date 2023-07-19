@@ -1,4 +1,7 @@
 <%- include("partials/header"); -%>
+<!-- search bar -->
+<%- include("search"); -%>
+
 <h1>Customer List</h1>
 <% if (customers.length === 0) { %>
 <p>No customers found.</p>
@@ -9,10 +12,7 @@
 			<th>Id</th>
 			<th>Name</th>
 			<th>Mobile Number</th>
-			<th>Transaction Amount</th>
-			<th>Transaction Type</th>
-			<th>Transaction Date</th>
-			<th>Balance</th>
+			<th>view</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -21,14 +21,10 @@
 			<td><%= customer.customerId %></td>
 			<td><%= customer.customerName %></td>
 			<td><%= customer.mobile_no %></td>
-			<% customer.transactions.forEach(function(transaction) { %>
-			<td><%= transaction.transaction_amount %></td>
-			<td><%= transaction.transaction_type %></td>
-			<td><%= transaction.transaction_date %></td>
-			<% }); %>
-			<td><%= customer.balance %></td>
+			<td><a href="/viewCustomer?customerId=<%= customer.customerId %>">view</a></td>
 		</tr>
 		<% }); %>
 	</tbody>
 </table>
+
 <% } %> <%- include("partials/footer"); -%>
