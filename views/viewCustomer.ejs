@@ -19,6 +19,7 @@
 
 <table>
 	<thead>
+		<!-- <th>Transaction Id</th> -->
 		<th>Transaction Amount</th>
 		<th>Transaction Type</th>
 		<th>Transaction Date</th>
@@ -28,13 +29,25 @@
 	</thead>
 	<tbody>
 		<% customer.transactions.forEach(function(transaction) { %>
-		<td><%= transaction.transaction_amount %></td>
-		<td><%= transaction.transaction_type %></td>
-		<td><%= transaction.transaction_date %></td>
-		<td><%= transaction.transaction_time %></td>
-
-		<% }); %>
-		<td><%= customer.balance %></td>
+		<tr>
+			<!-- <td><%= transaction.transaction_id %></td> -->
+			<td><%= transaction.transaction_amount %></td>
+			<td><%= transaction.transaction_type %></td>
+			<td><%= transaction.transaction_date %></td>
+			<td><%= transaction.transaction_time %></td>
+			<td colspan-"5"><%= transaction.transaction_balance %></td>
+			<% }); %>
+			<!-- <td colspan="5"><%= customer.balance %></td> -->
+		</tr>
 	</tbody>
 </table>
+
+<button onclick="window.location.href='/addTransaction?customerId=<%= customer.customerId %>'">Add Transaction</button>
+
+<form action="/deleteLatestTransaction/<%= customer.customerId %>" method="POST" onsubmit="return confirm('Are you sure you want to delete the latest transaction within 1 week?');">
+  <button type="submit" class="btn btn-danger">Delete Latest Transaction within 1 week</button>
+</form>
+
+<!-- Add the script section at the end -->
+
 <%- include("partials/footer"); -%>
