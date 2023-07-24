@@ -22,10 +22,11 @@
 		<!-- <th>Transaction Id</th> -->
 		<th>Transaction Amount</th>
 		<th>Transaction Type</th>
-		<th>Transaction Date</th>
-		<th>Transaction Time</th>
-
+		<th> Date</th>
+		<th>Time</th>
 		<th>Balance</th>
+		<th>Remarks</th>
+
 	</thead>
 	<tbody>
 		<% customer.transactions.forEach(function(transaction) { %>
@@ -36,8 +37,8 @@
 			<td><%= transaction.transaction_date %></td>
 			<td><%= transaction.transaction_time %></td>
 			<td colspan-"5"><%= transaction.transaction_balance %></td>
+			<td><%= transaction.remarks %></td>
 			<% }); %>
-			<!-- <td colspan="5"><%= customer.balance %></td> -->
 		</tr>
 	</tbody>
 </table>
@@ -47,7 +48,5 @@
 <form action="/deleteLatestTransaction/<%= customer.customerId %>" method="POST" onsubmit="return confirm('Are you sure you want to delete the latest transaction within 1 week?');">
   <button type="submit" class="btn btn-danger">Delete Latest Transaction within 1 week</button>
 </form>
-
-<!-- Add the script section at the end -->
 
 <%- include("partials/footer"); -%>

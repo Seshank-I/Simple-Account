@@ -22,7 +22,7 @@ const transactionSchema = new mongoose.Schema({
   },
   transaction_time: { type: String, default: new Date().toLocaleTimeString() },
   transaction_balance: { type: Number, default: 0 },
-  remarks: String
+  remarks: { type: String }
 });
 
 const customerSchema = new mongoose.Schema({
