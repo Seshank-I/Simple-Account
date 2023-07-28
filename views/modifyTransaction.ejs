@@ -1,0 +1,19 @@
+<%- include("partials/header"); -%>
+
+<h2>Modify Transaction</h2>
+
+<form action="/modifyLatestTransaction/<%= customer.customerId %>" method="POST">
+  <input type="hidden" name="transactionId" value="<%= transaction._id %>">
+  <label for="newName">New Name:</label>
+  <input type="text" name="newName" id="newName" value="<%= transaction.transaction_type %>">
+  <label for="newTransactionType">New Transaction Type:</label>
+  <select name="newTransactionType" id="newTransactionType">
+    <option value="credit" <%= transaction.transaction_type === 'credit' ? 'selected' : '' %>>Credit</option>
+    <option value="debit" <%= transaction.transaction_type === 'debit' ? 'selected' : '' %>>Debit</option>
+  </select>
+  <label for="newTransactionAmount">New Transaction Amount:</label>
+  <input type="number" name="newTransactionAmount" id="newTransactionAmount" value="<%= transaction.transaction_amount %>">
+  <button type="submit">Save Changes</button>
+</form>
+
+<%- include("partials/footer"); -%>

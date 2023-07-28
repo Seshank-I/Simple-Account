@@ -43,8 +43,13 @@ const customerSchema = new mongoose.Schema({
 })
 
 
-customerSchema.pre('save', async function (next) {
-  // Incremental customerId
+function parseDate(dateString) {
+  const [day, month, year] = dateString.split("/");
+  return new Date(`${year} ${month} ${day}`);
+}
+
+
+customerSchema.pre('save', async function (next) {// Incremental customerId
   if (!this.customerId) {
     try {
       const count = await this.constructor.countDocuments();
@@ -98,7 +103,6 @@ app.route("/addCustomer")
     res.render("addCustomer")
   })
   .post(function (req, res) {
-    console.log("addcustomers post");
     const { customerName, mobile_no, transaction_amount, transaction_type, remarks } = req.body;
     const amount = parseFloat(transaction_amount);
     const customer = new Customer({
@@ -115,9 +119,10 @@ app.route("/addCustomer")
     } else if (transaction_type === "debit") {
       customer.balance += amount;
     }
-    customer.save().then(function () {
-      res.redirect('/');
-    })
+    customer.save()
+      .then(function () {
+        res.redirect('/');
+      })
       .catch(function (error) {
         console.error(error);
         res.status(500).send('Error adding customer');
@@ -130,7 +135,7 @@ app.get('/viewCustomer', (req, res) => {
 
   Customer.findOne({ customerId }).exec()
     .then(customer => {
-      res.render('viewCustomer', { customer });
+      res.render('viewCustomer', { customer, parseDate });
     })
     .catch(error => {
       console.error('Error retrieving customer details:', error);
@@ -189,58 +194,135 @@ app.route('/addTransaction')
         return Customer.findOne({ customerId }).exec();
       })
       .then((customer) => {
-        res.render('viewCustomer', { customer });
+        res.redirect(`/viewCustomer?customerId=${customerId}`);
       })
       .catch((error) => {
         console.error(error);
         res.status(500).send('Error adding transaction');
       });
-    res.redirect('/');
   });
 
 
-function parseDate(dateString) {
-  const [day, month, year] = dateString.split("/");
-  return new Date(`${year} ${month} ${day}`);
-}
+//     const currentDate = new Date()
+//     const transactionDate = parseDate(latestTransaction.transaction_date);
+//     const timeDifference = currentDate.getTime() - transactionDate.getTime();
+//     const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
 
-app.post('/deleteLatestTransaction/:customerId', async (req, res) => {
+//     if (daysDifference <= 7) {
+//       customer.transactions.pop();
+
+app.get('/modifyTransaction', (req, res) => {
+  const customerId = req.query.customerId;
+  const transactionId = req.query.transactionId;
+
+  Customer.findOne({ customerId }).exec()
+    .then(customer => {
+      if (!customer) {
+        return res.status(404).send('Customer not found');
+      }
+
+      const transaction = customer.transactions.find(t => t._id.equals(transactionId));
+
+      if (!transaction) {
+        return res.status(404).send('Transaction not found for the customer');
+      }
+
+      res.render('modifyTransaction', { customer, transaction });
+    })
+    .catch(error => {
+      console.error('Error retrieving customer details:', error);
+      res.status(500).send('Error retrieving customer details');
+    });
+});
+app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
   const customerId = req.params.customerId;
+  const { transactionId, newName, newTransactionType, newTransactionAmount } = req.body;
+  const newAmount = parseFloat(newTransactionAmount);
+
   try {
     const customer = await Customer.findOne({ customerId });
     if (!customer) {
       return res.status(404).send('Customer not found');
     }
-    const latestTransaction = customer.transactions[customer.transactions.length - 1];
 
-    if (!latestTransaction) {
-      return res.status(404).send('No transactions found for the customer');
+    const latestTransactionIndex = customer.transactions.findIndex((transaction) => transaction._id.equals(transactionId));
+    if (latestTransactionIndex === -1) {
+      return res.status(404).send('Transaction not found for the customer');
     }
 
-    const currentDate = new Date()
-    const transactionDate = parseDate(latestTransaction.transaction_date);
-    const timeDifference = currentDate.getTime() - transactionDate.getTime();
-    const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
+    const latestTransaction = customer.transactions[latestTransactionIndex];
 
-    if (daysDifference <= 7) {
-      customer.transactions.pop();
+    const updatedTransaction = {
+      _id: latestTransaction._id,
+      transaction_amount: newAmount,
+      transaction_type: newTransactionType,
+      transaction_date: latestTransaction.transaction_date,
+      transaction_time: latestTransaction.transaction_time,
+      remarks: latestTransaction.remarks
+    };
 
-      if (latestTransaction.transaction_type === 'credit') {
-        customer.balance += latestTransaction.transaction_amount;
-      } else if (latestTransaction.transaction_type === 'debit') {
-        customer.balance -= latestTransaction.transaction_amount;
-      }
-
-      await customer.save();
-
-      res.redirect(`/viewCustomer?customerId=${customerId}`);
-    } else {
-      return res.status(403).send('Latest transaction cannot be deleted as it is older than 1 week');
+    if (newTransactionType === 'credit') {
+      customer.balance += latestTransaction.transaction_amount - newAmount;
+    } else if (newTransactionType === 'debit') {
+      customer.balance -= latestTransaction.transaction_amount - newAmount;
     }
+
+    customer.transactions[latestTransactionIndex] = updatedTransaction;
+    await customer.save();
+
+    res.redirect(`/viewCustomer?customerId=${customerId}`);
   } catch (error) {
     console.error(error);
-    return res.status(500).send('Error deleting latest transaction');
+    return res.status(500).send('Error modifying latest transaction');
   }
+});/*const customerId = req.params.customerId;
+const { transactionId, newTransactionType, newTransactionAmount } = req.body;
+const newAmount = parseFloat(newTransactionAmount);
+
+try {
+  const customer = await Customer.findOne({ customerId });
+  if (!customer) {
+    return res.status(404).send('Customer not found');
+  }
+
+  const transactionIndex = customer.transactions.findIndex((transaction) => transaction._id.equals(transactionId));
+  if (transactionIndex === -1) {
+    return res.status(404).send('Transaction not found for the customer');
+  }
+
+  const originalTransaction = customer.transactions[transactionIndex];
+  const currentDate = new Date();
+
+  // Calculate the difference in balance caused by the modification
+  const balanceDifference = originalTransaction.transaction_amount - newAmount;
+
+  // Update the balance of the modified transaction
+  originalTransaction.transaction_amount = newAmount;
+  originalTransaction.transaction_type = newTransactionType;
+
+  // Update the balance of subsequent transactions
+  for (let i = transactionIndex + 1; i < customer.transactions.length; i++) {
+    const transaction = customer.transactions[i];
+    if (transaction.transaction_type === 'credit') {
+      transaction.transaction_balance -= balanceDifference;
+    } else if (transaction.transaction_type === 'debit') {
+      transaction.transaction_balance += balanceDifference;
+    }
+  }
+
+  // Save the updated customer with modified transactions
+  await customer.save();
+
+  res.redirect(`/viewCustomer?customerId=${customerId}`);
+} catch (error) {
+  console.error(error);
+  return res.status(500).send('Error modifying latest transaction');
+}
+}); */
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).send('Internal Server Error');
 });
 
 app.listen(3000, () => {
