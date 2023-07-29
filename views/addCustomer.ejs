@@ -1,27 +1,6 @@
-<%- include("partials/header"); -%>
-<!-- <h1>Add New Customer</h1>
-<form action="/addCustomer" method="POST">
-	<div>
-		<label for="customerName">Name:</label>
-		<input type="text" id="customerName" name="customerName" placeholder="enter name" required />
-	</div>
-	<div>
-		<label for="mobile_no">Mobile Number:</label>
-		<input type="text" id="mobile_no" name="mobile_no" placeholder="enter mobile number" required />
-	</div>
-	<div>
-		<label for="transaction_type">Transaction Type:</label>
-		<select id="transaction_type" name="transaction_type" required>
-			<option value="credit">Credit</option>
-			<option value="debit">Debit</option>
-		</select>
-	</div>
-	<div>
-		<label for="transaction_amount">Transaction Amount:</label>
-		<input type="number" id="transaction_amount" name="transaction_amount" required />
-	</div>
-	<button type="submit">Add New Customer</button>
-</form> -->
+<%- include("partials/header"); -%> <% if(error){ %>
+<div id="error-message" class="alert alert-danger" role="alert"><%= error %></div>
+<% } %>
 <form action="/addCustomer" method="POST" class="ml-1">
 	<h1>Add New Customer</h1>
 
@@ -29,13 +8,13 @@
 		<div class="col-md-5 ml-1">
 			<div class="form-group">
 				<label for="customerName">Name:</label>
-				<input type="text" id="customerName" name="customerName" class="form-control" placeholder="Enter name" required />
+				<input type="text" id="customerName" name="customerName" class="form-control" value="<%- FormData ? FormData.customerName : '' %>" placeholder="Enter name" required />
 			</div>
 		</div>
 		<div class="col-md-5 ml-4">
 			<div class="form-group">
 				<label for="mobile_no">Mobile Number:</label>
-				<input type="text" id="mobile_no" name="mobile_no" class="form-control" placeholder="Enter mobile number" required />
+				<input type="text" id="mobile_no" name="mobile_no" class="form-control" value="<%- FormData ? FormData.mobile_no : '' %>" placeholder="Enter mobile number" required />
 			</div>
 		</div>
 	</div>
@@ -43,7 +22,7 @@
 		<div class="col-md-5 ml-1">
 			<div class="form-group">
 				<label for="transaction_type">Transaction Type:</label>
-				<select id="transaction_type" name="transaction_type" class="form-control" required>
+				<select id="transaction_type" name="transaction_type" class="form-control" value="<%- FormData ? FormData.transaction_type : '' %>" required>
 					<option value="credit">Credit</option>
 					<option value="debit">Debit</option>
 				</select>
@@ -52,13 +31,13 @@
 		<div class="col-md-5 ml-4">
 			<div class="form-group">
 				<label for="transaction_amount">Transaction Amount:</label>
-				<input type="number" id="transaction_amount" name="transaction_amount" class="form-control" required />
+				<input type="number" id="transaction_amount" name="transaction_amount" class="form-control" value="<%- FormData ? FormData.transaction_amount : '' %>" required />
 			</div>
 		</div>
 		<div class="col-md-5 ml-4">
 			<div class="form-group">
 				<label for="remarks">Remarks:</label>
-				<input type="text" id="remarks" name="remarks" class="form-control" required />
+				<input type="text" id="remarks" name="remarks" class="form-control" value="<%- FormData ? FormData.remarks : '' %>" required />
 			</div>
 		</div>
 	</div>
@@ -66,3 +45,13 @@
 </form>
 
 <%- include("partials/footer"); -%>
+
+<script>
+	// Automatically remove the error message after 5 seconds
+	setTimeout(() => {
+		const errorMessage = document.getElementById("error-message");
+		if (errorMessage) {
+			errorMessage.remove();
+		}
+	}, 5000);
+</script>

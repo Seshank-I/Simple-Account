@@ -100,7 +100,7 @@ app.route("/")
 
 app.route("/addCustomer")
   .get(function (req, res) {
-    res.render("addCustomer")
+    res.render("addCustomer", { error: '' })
   })
   .post(function (req, res) {
     const { customerName, mobile_no, transaction_amount, transaction_type, remarks } = req.body;
@@ -124,8 +124,11 @@ app.route("/addCustomer")
         res.redirect('/');
       })
       .catch(function (error) {
-        console.error(error);
-        res.status(500).send('Error adding customer');
+        console.error(error, req.body);
+        res.render("addCustomer", {
+          error: "Customer Name and Mobile Number should be unique",
+          FormData: req.body  // Pass the previously entered form data back
+        });
       })
   })
 
@@ -235,7 +238,7 @@ app.get('/modifyTransaction', (req, res) => {
     });
 });
 app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
-  const customerId = req.params.customerId;
+  /*const customerId = req.params.customerId;
   const { transactionId, newName, newTransactionType, newTransactionAmount } = req.body;
   const newAmount = parseFloat(newTransactionAmount);
 
@@ -268,6 +271,53 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
     }
 
     customer.transactions[latestTransactionIndex] = updatedTransaction;
+   */const customerId = req.params.customerId;
+  const { transactionId, newRemarks, newTransactionType, newTransactionAmount } = req.body;
+  const newAmount = parseFloat(newTransactionAmount);
+
+  try {
+    const customer = await Customer.findOne({ customerId });
+    if (!customer) {
+      return res.status(404).send('Customer not found');
+    }
+
+    const transactionIndex = customer.transactions.findIndex((transaction) => transaction._id.equals(transactionId));
+    if (transactionIndex === -1) {
+      return res.status(404).send('Transaction not found for the customer');
+    }
+
+    const originalTransaction = customer.transactions[transactionIndex];
+    const updatedTransaction = {
+      ...originalTransaction,
+      transaction_amount: newAmount,
+      remarks: newRemarks,
+      transaction_type: newTransactionType
+    };
+
+    const balanceDifference = newAmount - originalTransaction.transaction_amount;
+    if (transactionIndex === 0) {
+      updatedTransaction.transaction_balance = newAmount;
+    } else {
+      const previousTransaction = customer.transactions[transactionIndex - 1];
+      if (updatedTransaction.transaction_type === 'credit') {
+        updatedTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) + newAmount;
+      } else if (updatedTransaction.transaction_type === 'debit') {
+        updatedTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) - newAmount;
+      }
+    }
+
+    customer.balance -= balanceDifference;
+
+    for (let i = transactionIndex + 1; i < customer.transactions.length; i++) {
+      const transaction = customer.transactions[i];
+      if (transaction.transaction_type === 'credit') {
+        transaction.transaction_balance -= balanceDifference;
+      } else if (transaction.transaction_type === 'debit') {
+        transaction.transaction_balance += balanceDifference;
+      }
+    }
+
+    customer.transactions[transactionIndex] = updatedTransaction;
     await customer.save();
 
     res.redirect(`/viewCustomer?customerId=${customerId}`);
@@ -275,50 +325,7 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
     console.error(error);
     return res.status(500).send('Error modifying latest transaction');
   }
-});/*const customerId = req.params.customerId;
-const { transactionId, newTransactionType, newTransactionAmount } = req.body;
-const newAmount = parseFloat(newTransactionAmount);
-
-try {
-  const customer = await Customer.findOne({ customerId });
-  if (!customer) {
-    return res.status(404).send('Customer not found');
-  }
-
-  const transactionIndex = customer.transactions.findIndex((transaction) => transaction._id.equals(transactionId));
-  if (transactionIndex === -1) {
-    return res.status(404).send('Transaction not found for the customer');
-  }
-
-  const originalTransaction = customer.transactions[transactionIndex];
-  const currentDate = new Date();
-
-  // Calculate the difference in balance caused by the modification
-  const balanceDifference = originalTransaction.transaction_amount - newAmount;
-
-  // Update the balance of the modified transaction
-  originalTransaction.transaction_amount = newAmount;
-  originalTransaction.transaction_type = newTransactionType;
-
-  // Update the balance of subsequent transactions
-  for (let i = transactionIndex + 1; i < customer.transactions.length; i++) {
-    const transaction = customer.transactions[i];
-    if (transaction.transaction_type === 'credit') {
-      transaction.transaction_balance -= balanceDifference;
-    } else if (transaction.transaction_type === 'debit') {
-      transaction.transaction_balance += balanceDifference;
-    }
-  }
-
-  // Save the updated customer with modified transactions
-  await customer.save();
-
-  res.redirect(`/viewCustomer?customerId=${customerId}`);
-} catch (error) {
-  console.error(error);
-  return res.status(500).send('Error modifying latest transaction');
-}
-}); */
+});
 
 app.use((err, req, res, next) => {
   console.error(err);
@@ -328,3 +335,57 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
 });
+
+
+// app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
+//   const customerId = req.params.customerId;
+//   const { transactionId, newRemarks, newTransactionType, newTransactionAmount } = req.body;
+//   const newAmount = parseFloat(newTransactionAmount);
+
+//   try {
+//     const customer = await Customer.findOne({ customerId });
+//     if (!customer) {
+//       return res.status(404).send('Customer not found');
+//     }
+
+//     const transactionIndex = customer.transactions.findIndex((transaction) => transaction._id.equals(transactionId));
+//     if (transactionIndex === -1) {
+//       return res.status(404).send('Transaction not found for the customer');
+//     }
+
+//     const originalTransaction = customer.transactions[transactionIndex];
+//     const updatedTransaction = {
+//       _id: originalTransaction._id,
+//       transaction_date: originalTransaction.transaction_date,
+//       transaction_time: originalTransaction.transaction_time,
+//     };
+
+//     const balanceDifference = newAmount - originalTransaction.transaction_amount;
+
+//     originalTransaction.transaction_amount = newAmount;
+//     originalTransaction.transaction_type = newTransactionType;
+
+//     if (transactionIndex === 0) {
+//       originalTransaction.transaction_balance = newAmount;
+//     } else {
+//       const previousTransaction = customer.transactions[transactionIndex - 1];
+//       if (originalTransaction.transaction_type === 'credit') {
+//         originalTransaction.transaction_balance = previousTransaction.transaction_balance + newAmount;
+//       } else if (originalTransaction.transaction_type === 'debit') {
+//         originalTransaction.transaction_balance = previousTransaction.transaction_balance - newAmount;
+//       }
+//     }
+
+//     customer.balance -= balanceDifference;
+
+//     for (let i = transactionIndex + 1; i < customer.transactions.length; i++) {
+//       const transaction = customer.transactions[i];
+//       if (transaction.transaction_type === 'credit') {
+//         transaction.transaction_balance -= balanceDifference;
+//       } else if (transaction.transaction_type === 'debit') {
+//         transaction.transaction_balance += balanceDifference;
+//       }
+//     }
+
+//     customer.transactions[transactionIndex] = updatedTransaction;
+//   });
