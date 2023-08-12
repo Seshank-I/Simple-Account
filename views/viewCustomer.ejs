@@ -91,7 +91,7 @@
 			<td><%= transaction.transaction_balance %></td>
 			<td><%= transaction.remarks %></td>
 			<td>
-				<% const currentDate = new Date(); const transactionDate = parseDate(transaction.transaction_date); if (currentDate.getMonth() === transactionDate.getMonth()) { %>
+				<% const currentDate = new Date(); const transactionDate = parseDate(transaction.transaction_date); if (currentDate.getDay() === transactionDate.getDay()) { %>
 				<button onclick="window.location.href='/modifyTransaction?customerId=<%= customer.customerId %>&transactionId=<%= transaction._id %>'">Edit</button>
 				<% } %>
 			</td>
