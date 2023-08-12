@@ -48,6 +48,17 @@ function parseDate(dateString) {
   return new Date(`${year} ${month} ${day}`);
 }
 
+function calculateDaysDifference(transaction_date) {
+  const transactionDateParts = transaction_date.split('/');
+  const day = parseInt(transactionDateParts[0]);
+  const month = parseInt(transactionDateParts[1]) - 1;
+  const year = parseInt(transactionDateParts[2]);
+  const transactionDate = new Date(year, month, day);
+
+  const currentDate = new Date();
+  const daysDifference = Math.floor((currentDate.getTime() - transactionDate.getTime()) / (1000 * 3600 * 24));
+  return daysDifference < 7;
+}
 
 customerSchema.pre('save', async function (next) {// Incremental customerId
   if (!this.customerId) {
@@ -138,7 +149,7 @@ app.get('/viewCustomer', (req, res) => {
 
   Customer.findOne({ customerId }).exec()
     .then(customer => {
-      res.render('viewCustomer', { customer, parseDate });
+      res.render('viewCustomer', { customer, parseDate, calculateDaysDifference });
     })
     .catch(error => {
       console.error('Error retrieving customer details:', error);
@@ -203,14 +214,6 @@ app.route('/addTransaction')
       });
   });
 
-
-//     const currentDate = new Date()
-//     const transactionDate = parseDate(latestTransaction.transaction_date);
-//     const timeDifference = currentDate.getTime() - transactionDate.getTime();
-//     const daysDifference = Math.floor(timeDifference / (1000 * 3600 * 24));
-
-//     if (daysDifference <= 7) {
-//       customer.transactions.pop();
 
 app.get('/modifyTransaction', (req, res) => {
   const customerId = req.query.customerId;

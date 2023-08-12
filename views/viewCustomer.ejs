@@ -71,7 +71,6 @@
 
 <table>
 	<thead>
-		<!-- <th>Transaction Id</th> -->
 		<th>Transaction Amount</th>
 		<th>Transaction Type</th>
 		<th>Date</th>
@@ -83,7 +82,6 @@
 	<tbody>
 		<% customer.transactions.forEach(function(transaction) { %>
 		<tr>
-			<!-- <td><%= transaction.transaction_id %></td> -->
 			<td><%= transaction.transaction_amount %></td>
 			<td><%= transaction.transaction_type %></td>
 			<td><%= transaction.transaction_date %></td>
@@ -91,7 +89,7 @@
 			<td><%= transaction.transaction_balance %></td>
 			<td><%= transaction.remarks %></td>
 			<td>
-				<% const currentDate = new Date(); const transactionDate = parseDate(transaction.transaction_date); if (currentDate.getDay() === transactionDate.getDay()) { %>
+				<% if(calculateDaysDifference(transaction.transaction_date)){ %>
 				<button onclick="window.location.href='/modifyTransaction?customerId=<%= customer.customerId %>&transactionId=<%= transaction._id %>'">Edit</button>
 				<% } %>
 			</td>
