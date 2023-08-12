@@ -270,8 +270,8 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
       customer.balance -= latestTransaction.transaction_amount - newAmount;
     }
 
-    customer.transactions[latestTransactionIndex] = updatedTransaction; */
-  const customerId = req.params.customerId;
+    customer.transactions[latestTransactionIndex] = updatedTransaction;
+   */const customerId = req.params.customerId;
   const { transactionId, newRemarks, newTransactionType, newTransactionAmount } = req.body;
   const newAmount = parseFloat(newTransactionAmount);
 
@@ -300,9 +300,9 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
     } else {
       const previousTransaction = customer.transactions[transactionIndex - 1];
       if (updatedTransaction.transaction_type === 'credit') {
-        updatedTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) - newAmount;
-      } else if (updatedTransaction.transaction_type === 'debit') {
         updatedTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) + newAmount;
+      } else if (updatedTransaction.transaction_type === 'debit') {
+        updatedTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) - newAmount;
       }
     }
 
@@ -310,14 +310,11 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
 
     for (let i = transactionIndex + 1; i < customer.transactions.length; i++) {
       const transaction = customer.transactions[i];
-      console.log(transaction)
-      console.log('first', balanceDifference)
       if (transaction.transaction_type === 'credit') {
         transaction.transaction_balance -= balanceDifference;
       } else if (transaction.transaction_type === 'debit') {
         transaction.transaction_balance += balanceDifference;
       }
-      console.log('second', transaction.transaction_balance)
     }
 
     customer.transactions[transactionIndex] = updatedTransaction;
