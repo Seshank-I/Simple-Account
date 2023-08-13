@@ -1,0 +1,30 @@
+<%- include("partials/header"); -%>
+<!-- search bar -->
+<%- include("search"); -%>
+
+<h1>Customer List</h1>
+<% if (customers.length === 0) { %>
+<p>No customers found.</p>
+<% } else { %>
+<table class="table table-striped table-hover">
+	<thead class="thead-light">
+		<tr>
+			<th>Id</th>
+			<th>Name</th>
+			<th>Mobile Number</th>
+			<th>view</th>
+		</tr>
+	</thead>
+	<tbody>
+		<% customers.forEach(function(customer) { %>
+		<tr>
+			<td><%= customer.customerId %></td>
+			<td><%= customer.customerName %></td>
+			<td><%= customer.mobile_no %></td>
+			<td><a href="/viewCustomer?customerId=<%= customer.customerId %>">view</a></td>
+		</tr>
+		<% }); %>
+	</tbody>
+</table>
+
+<% } %> <%- include("partials/footer"); -%>
