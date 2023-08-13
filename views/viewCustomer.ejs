@@ -81,7 +81,7 @@
 	</thead>
 	<tbody>
 		<% customer.transactions.forEach(function(transaction) { %>
-		<tr>
+		<tr class="<%= transaction.transaction_type === 'money_received' ? 'money-received' : 'money-sent' %>">
 			<td><%= transaction.transaction_amount %></td>
 			<td><%= transaction.transaction_type %></td>
 			<td><%= transaction.transaction_date %></td>

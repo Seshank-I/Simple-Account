@@ -10,16 +10,14 @@
 			<th>Id</th>
 			<th>Name</th>
 			<th>Mobile Number</th>
-			<th>view</th>
 		</tr>
 	</thead>
 	<tbody>
 		<% customers.forEach(function(customer) { %>
-		<tr>
+		<tr onclick="window.location.href='/viewCustomer?customerId=<%= customer.customerId %>'" style="cursor: pointer">
 			<td><%= customer.customerId %></td>
 			<td><%= customer.customerName %></td>
 			<td><%= customer.mobile_no %></td>
-			<td><a href="/viewCustomer?customerId=<%= customer.customerId %>">view</a></td>
 		</tr>
 		<% }); %>
 	</tbody>

@@ -8,13 +8,13 @@ const app = express()
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
-mongoose.connect("mongodb://127.0.0.1:27017/billingDB?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1.9.1")
+mongoose.connect("mongodb+srv://seshank_i:Simple-Account%40123@simple-account.58gg869.mongodb.net/")
 
 const transactionSchema = new mongoose.Schema({
   transaction_amount: Number,
   transaction_type: {
     type: String,
-    enum: ['credit', 'debit']
+    enum: ['money_received', 'money_sent']
   },
   transaction_date: {
     type: String,
@@ -125,9 +125,9 @@ app.route("/addCustomer")
       transaction_type: transaction_type,
       remarks: remarks
     })
-    if (transaction_type === "credit") {
+    if (transaction_type === "money_received") {
       customer.balance -= amount;
-    } else if (transaction_type === "debit") {
+    } else if (transaction_type === "money_sent") {
       customer.balance += amount;
     }
     customer.save()
@@ -192,9 +192,9 @@ app.route('/addTransaction')
       { new: true })
       .then((updatedCustomer) => {
         if (updatedCustomer) {
-          if (transactionType === 'credit') {
+          if (transactionType === 'money_received') {
             updatedCustomer.balance -= amount;
-          } else if (transactionType === 'debit') {
+          } else if (transactionType === 'money_sent') {
             updatedCustomer.balance += amount;
           }
           return updatedCustomer.save();
@@ -238,6 +238,8 @@ app.get('/modifyTransaction', (req, res) => {
       res.status(500).send('Error retrieving customer details');
     });
 });
+
+
 app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
 
   const customerId = req.params.customerId;
@@ -261,14 +263,17 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
     originalTransaction.remarks = newRemarks
     originalTransaction.transaction_type = newTransactionType
     console.log('transactionIndex :>> ', transactionIndex);
-    if (transactionIndex === 0) {
+    if (transactionIndex === 0 && originalTransaction.transaction_type === 'money_received') {
+      originalTransaction.transaction_balance = -newAmount;
+    }
+    else if (transactionIndex === 0 && originalTransaction.transaction_type === 'money_sent') {
       originalTransaction.transaction_balance = newAmount;
     }
     else {
       const previousTransaction = customer.transactions[transactionIndex - 1];
-      if (originalTransaction.transaction_type === 'credit') {
+      if (originalTransaction.transaction_type === 'money_received') {
         originalTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) - newAmount;
-      } else if (originalTransaction.transaction_type === 'debit') {
+      } else if (originalTransaction.transaction_type === 'money_sent') {
         originalTransaction.transaction_balance = parseFloat(previousTransaction.transaction_balance) + newAmount;
       }
     }
@@ -278,9 +283,9 @@ app.post('/modifyLatestTransaction/:customerId', async (req, res) => {
     for (let i = transactionIndex + 1; i < customer.transactions.length; i++) {
       prevBalance = customer.transactions[i - 1].transaction_balance;
       const currentTransaction = customer.transactions[i];
-      if (currentTransaction.transaction_type === 'credit') {
+      if (currentTransaction.transaction_type === 'money_received') {
         currentTransaction.transaction_balance = prevBalance - parseFloat(currentTransaction.transaction_amount);
-      } else if (currentTransaction.transaction_type === 'debit') {
+      } else if (currentTransaction.transaction_type === 'money_sent') {
         currentTransaction.transaction_balance = prevBalance + parseFloat(currentTransaction.transaction_amount);
       }
       customer.balance = currentTransaction.transaction_balance;

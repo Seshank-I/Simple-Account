@@ -24,8 +24,8 @@
 
     <label for="newTransactionType">New Transaction Type:</label>
       <select name="newTransactionType" id="newTransactionType">
-        <option value="credit" <%= transaction.transaction_type === 'credit' ? 'selected' : '' %>>Credit</option>
-        <option value="debit" <%= transaction.transaction_type === 'debit' ? 'selected' : '' %>>Debit</option>
+        <option value="money_received" <%= transaction.transaction_type === 'money_received' ? 'selected' : '' %>>money_received</option>
+        <option value="money_sent" <%= transaction.transaction_type === 'money_sent' ? 'selected' : '' %>>money_sent</option>
       </select>
       
     <label for="newTransactionAmount">New Transaction Amount:</label>
