@@ -62,7 +62,6 @@ passport.use(new GoogleStrategy({
   return done(null, profile);
 }));
 
-// Serialize user into the session
 passport.serializeUser((user, done) => {
   done(null, user);
 });
