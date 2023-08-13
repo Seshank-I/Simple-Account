@@ -42,6 +42,50 @@ const customerSchema = new mongoose.Schema({
   transactions: { type: [transactionSchema], default: [] }
 })
 
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Configure Google strategy
+passport.use(new GoogleStrategy({
+  clientID: 'YOUR_CLIENT_ID',
+  clientSecret: 'YOUR_CLIENT_SECRET',
+  callbackURL: 'http://localhost:3000/auth/google/callback'
+}, (accessToken, refreshToken, profile, done) => {
+  // Save user profile data to session or database
+  return done(null, profile);
+}));
+
+// Serialize user into the session
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+// Deserialize user from the session
+passport.deserializeUser((user, done) => {
+  done(null, user);
+});
+
+
+// Google OAuth login route
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+// Google OAuth callback route
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect to the home page
+    res.redirect('/');
+  }
+);
 
 function parseDate(dateString) {
   const [day, month, year] = dateString.split("/");
