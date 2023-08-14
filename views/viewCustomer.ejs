@@ -68,7 +68,6 @@
 		</tr>
 	</tbody>
 </table>
-
 <table>
 	<thead>
 		<th>Transaction Amount</th>
@@ -80,7 +79,7 @@
 		<th>Edit</th>
 	</thead>
 	<tbody>
-		<% customer.transactions.forEach(function(transaction) { %>
+		<% let moneyReceived = 0; let moneySent = 0; %> <% customer.transactions.forEach(function(transaction) { %>
 		<tr class="<%= transaction.transaction_type === 'money_received' ? 'money-received' : 'money-sent' %>">
 			<td><%= transaction.transaction_amount %></td>
 			<td><%= transaction.transaction_type %></td>
@@ -94,11 +93,17 @@
 				<% } %>
 			</td>
 		</tr>
-		<% }); %>
+		<% if (transaction.transaction_type === 'money_received') { moneyReceived += transaction.transaction_amount; } else if (transaction.transaction_type === 'money_sent') { moneySent += transaction.transaction_amount; } %> <% }); %>
 	</tbody>
 </table>
+<div class="money-sent">
+	<h3><%= moneySent %></h3>
+</div>
+<div class="money-received">
+	<h3><%= moneyReceived %></h3>
+</div>
 
-<button onclick="window.location.href='/addTransaction?customerId=<%= customer.customerId %>'">Add Transaction</button>
+<button class="mt-5" onclick="window.location.href='/addTransaction?customerId=<%= customer.customerId %>'">Add Transaction</button>
 
 <form action="/deleteLatestTransaction/<%= customer.customerId %>" method="POST" onsubmit="return confirm('Are you sure you want to delete the latest transaction within 1 week?');">
 	<button type="submit" class="btn btn-danger">Delete Latest Transaction within 1 week</button>
