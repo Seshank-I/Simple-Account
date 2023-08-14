@@ -8,7 +8,7 @@ const app = express()
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
-mongoose.connect("mongodb+srv://seshank_i:Simple-Account%40123@simple-account.58gg869.mongodb.net/")
+mongoose.connect("mongodb+srv://MONGO_USERNAME:MONGO_PASSWORD@MONGO_CLUSTER")
 
 const transactionSchema = new mongoose.Schema({
   transaction_amount: Number,
